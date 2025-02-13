@@ -15,6 +15,7 @@ const handleForm = (elements, state) => {
     filling: () => {
       input.disabled = false;
       button.disabled = false;
+      input.focus();
     },
     sending: () => {
       input.disabled = true;
@@ -22,7 +23,6 @@ const handleForm = (elements, state) => {
     },
     success: () => {
       form.reset();
-      input.focus();
     },
   };
 
