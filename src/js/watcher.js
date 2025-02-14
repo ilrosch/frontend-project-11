@@ -1,10 +1,10 @@
 import onChange from 'on-change';
 
-const handleErrors = (elements, state) => {
+const handleErrors = (elements, state, i18n) => {
   const { input, feedback } = elements;
   const { error } = state.form;
   input.classList.toggle('is-invalid', error);
-  feedback.textContent = error || '';
+  feedback.textContent = i18n.t(error) || '';
 };
 
 const handleForm = (elements, state) => {
@@ -29,13 +29,13 @@ const handleForm = (elements, state) => {
   return mapping[status]();
 };
 
-export default (elements, state) => {
+export default (elements, state, i18n) => {
   const watchedState = onChange(state, (path) => {
     switch (path) {
       case 'form.status':
       case 'form':
         handleForm(elements, state);
-        handleErrors(elements, state);
+        handleErrors(elements, state, i18n);
         break;
       default:
         break;

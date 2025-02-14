@@ -1,6 +1,8 @@
 import * as yup from 'yup';
+import i18next from 'i18next';
+import resources from './locales/index.js';
 import watcher from './watcher.js';
-import locales from './locales/index.js';
+import locales from './locales/locale.js';
 
 export default () => {
   const elements = {
@@ -19,7 +21,18 @@ export default () => {
     feeds: [],
   };
 
-  const watchedState = watcher(elements, state);
+  const i18nInstance = i18next.createInstance();
+  const promise = i18nInstance.init({
+    lng: 'ru',
+    resources,
+  }).then(() => {
+    document.querySelectorAll('[data-i18n]').forEach((element) => {
+      element.textContent = i18nInstance.t(element.dataset.i18n);
+    });
+    elements.input.setAttribute('placeholder', i18nInstance.t('form.label'));
+  });
+
+  Promise.all([promise]);
 
   yup.setLocale(locales);
 
@@ -28,8 +41,10 @@ export default () => {
     const schema = yup.string().url().required().notOneOf(urls);
     return schema.validate(value)
       .then(() => null)
-      .catch((err) => err.message);
+      .catch((err) => err.message.key);
   };
+
+  const watchedState = watcher(elements, state, i18nInstance);
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -45,7 +60,7 @@ export default () => {
           watchedState.form = {
             status: 'filling',
             valid: false,
-            error: err,
+            error: i18nInstance.t(err),
           };
         } else {
           watchedState.feeds.push({ url: value });
