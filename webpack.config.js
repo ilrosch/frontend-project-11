@@ -27,4 +27,13 @@ export default {
   output: {
     clean: true,
   },
+  devServer: {
+    client: {
+      overlay: {
+        errors: true,
+        warnings: false,
+        runtimeErrors: true,
+      },
+    },
+  },
 };

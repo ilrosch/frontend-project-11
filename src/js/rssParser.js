@@ -1,6 +1,4 @@
-import { uniqueId } from 'lodash';
-
-export default (data, url) => {
+export default (data) => {
   const parser = new DOMParser();
   const docRSS = parser.parseFromString(data, 'text/xml');
 
@@ -16,7 +14,7 @@ export default (data, url) => {
   const feedDescr = feedDescrElement.textContent;
 
   const feed = {
-    title: feedTitle, descr: feedDescr, url, id: uniqueId(),
+    title: feedTitle, descr: feedDescr,
   };
 
   const feedItemElements = docRSS.querySelectorAll('item');
@@ -28,7 +26,7 @@ export default (data, url) => {
     const linkElement = element.querySelector('link');
     const link = linkElement.textContent;
     return {
-      title, descr, link, feedId: feed.id, id: uniqueId(),
+      title, descr, link,
     };
   });
 

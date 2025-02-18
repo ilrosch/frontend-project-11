@@ -2,6 +2,7 @@ import 'bootstrap';
 import * as yup from 'yup';
 import i18next from 'i18next';
 import axios from 'axios';
+import { uniqueId } from 'lodash';
 
 import resources from './locales/index.js';
 import watcher from './watcher.js';
@@ -9,6 +10,7 @@ import locales from './locales/locale.js';
 import rssParser from './rssParser.js';
 
 const proxy = 'https://allorigins.hexlet.app/';
+const updatePosts = 5000;
 
 const addProxy = (url) => {
   const urlWidthProxy = new URL('/get', proxy);
@@ -17,29 +19,56 @@ const addProxy = (url) => {
   return urlWidthProxy.toString();
 };
 
+const getErrorKey = (error) => {
+  switch (error.code) {
+    case 'ERR_NETWORK':
+      return 'errors.network';
+    case 'ERR_NORSS':
+      return 'errors.no_rss';
+    default:
+      return 'errors.unknow';
+  }
+};
+
 const getRSS = (state, url) => {
   const urlWidthProxy = addProxy(url);
   return axios.get(urlWidthProxy)
     .then((response) => {
-      const { feed, posts } = rssParser(response.data.contents, url);
+      const data = rssParser(response.data.contents);
+      const feed = { ...data.feed, url, id: uniqueId() };
+      const posts = data.posts.map((post) => (
+        { ...post, feedId: feed.id, id: uniqueId() }
+      ));
       state.feeds.unshift(feed);
       state.posts.unshift(...posts);
     })
     .catch((err) => {
-      let errorKey;
-      switch (err.code) {
-        case 'ERR_NETWORK':
-          errorKey = 'errors.network';
-          break;
-        case 'ERR_NORSS':
-          errorKey = 'errors.no_rss';
-          break;
-        default:
-          console.log(err);
-          errorKey = 'errors.unknow';
-      }
-      throw errorKey;
+      throw getErrorKey(err);
     });
+};
+
+const loadNewPost = (state) => {
+  const promises = state.feeds.map((feed) => {
+    const urlWidthProxy = addProxy(feed.url);
+    return axios.get(urlWidthProxy)
+      .then((response) => {
+        const data = rssParser(response.data.contents);
+        const oldPosts = state.posts.filter(({ feedId }) => feedId === feed.id);
+        const newPosts = data.posts
+          .filter((post) => (
+            !oldPosts.find(({ title, descr }) => post.title === title && post.descr === descr)
+          ))
+          .map((post) => ({ ...post, feedId: feed.id, id: uniqueId() }));
+        state.posts.unshift(...newPosts);
+      })
+      .catch((err) => {
+        throw getErrorKey(err);
+      });
+  });
+
+  return Promise.all(promises)
+    .catch((e) => { console.error(e); })
+    .finally(() => { setTimeout(() => loadNewPost(state), updatePosts); });
 };
 
 export default () => {
@@ -131,6 +160,8 @@ export default () => {
           watchedState.ui.seenPosts.add(id);
         }
       });
+
+      setTimeout(() => loadNewPost(watchedState), updatePosts);
     });
 
   return promise;

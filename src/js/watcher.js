@@ -109,7 +109,6 @@ const handlePosts = (elements, state, i18n) => {
 };
 
 const handleModal = (state) => {
-  console.log(state.ui.modal.postId);
   const post = state.posts.find(({ id }) => id === state.ui.modal.postId);
   const title = document.querySelector('.modal-title');
   title.textContent = post.title;
