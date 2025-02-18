@@ -1,5 +1,15 @@
 import onChange from 'on-change';
 
+const createElement = (name, { classes = [], attrs = [], text = '' }) => {
+  const element = document.createElement(name);
+  element.textContent = text;
+  element.classList.add(...classes);
+  attrs.forEach(({ key, value }) => {
+    element.setAttribute(key, value);
+  });
+  return element;
+};
+
 const handleMessage = (elements, state, i18n) => {
   const { input, feedback } = elements;
   const { error } = state.form;
@@ -34,69 +44,79 @@ const handleForm = (elements, state) => {
 const handleFeeds = (elements, state, i18n) => {
   const { feedsBox } = elements;
 
-  const card = document.createElement('div');
-  card.classList.add('card', 'border-0');
-  const cardBody = document.createElement('div');
-  cardBody.classList.add('card-body');
-  const title = document.createElement('h2');
-  title.classList.add('title', 'h4');
-  title.textContent = i18n.t('feeds');
+  const card = createElement('div', { classes: ['card', 'border-0'] });
+  const cardBody = createElement('div', { classes: ['card-body'] });
+  const title = createElement('h2', { classes: ['title', 'h4'], text: i18n.t('feeds') });
   cardBody.append(title);
-  const list = document.createElement('ul');
-  list.classList.add('list-group', 'border-0', 'rounded-0');
+
+  const list = createElement('ul', { classes: ['list-group', 'border-0', 'rounded-0'] });
   const items = state.feeds.map((feed) => {
-    const li = document.createElement('li');
-    li.classList.add('list-group-item', 'border-0', 'border-end-0');
-    const h = document.createElement('h3');
-    h.classList.add('h6', 'm-0');
-    h.textContent = feed.title;
-    const p = document.createElement('p');
-    p.classList.add('m-0', 'small', 'text-black-50');
-    p.textContent = feed.descr;
+    const li = createElement('li', {
+      classes: [
+        'list-group-item',
+        'border-0',
+        'border-end-0',
+      ],
+    });
+    const h = createElement('h3', {
+      classes: ['h6', 'm-0'],
+      text: feed.title,
+    });
+    const p = createElement('p', {
+      classes: ['m-0', 'small', 'text-black-50'],
+      text: feed.descr,
+    });
+
     li.append(h, p);
     return li;
   });
+
   list.append(...items);
   card.append(cardBody, list);
-  feedsBox.innerHTML = '';
-  feedsBox.append(card);
+  feedsBox.replaceChildren(card);
 };
 
 const handlePosts = (elements, state, i18n) => {
   const { postsBox } = elements;
   const { posts, ui } = state;
 
-  const card = document.createElement('div');
-  card.classList.add('card', 'border-0');
-  const cardBody = document.createElement('div');
-  cardBody.classList.add('card-body');
-  const title = document.createElement('h2');
-  title.classList.add('title', 'h4');
-  title.textContent = i18n.t('posts');
+  const card = createElement('div', { classes: ['card', 'border-0'] });
+  const cardBody = createElement('div', { classes: ['card-body'] });
+  const title = createElement('h2', { classes: ['title', 'h4'], text: i18n.t('posts') });
   cardBody.append(title);
 
-  const list = document.createElement('ul');
-  list.classList.add('list-group', 'border-0', 'rounded-0');
+  const list = createElement('ul', { classes: ['list-group', 'border-0', 'rounded-0'] });
   const items = posts.map((post) => {
-    const li = document.createElement('li');
-    li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-
-    const a = document.createElement('a');
-    const classes = ui.seenPosts.has(post.id) ? ['fw-normal', 'link-secondary'] : ['fw-bold'];
-    a.classList.add(...classes);
-    a.setAttribute('href', post.link);
-    a.setAttribute('data-id', post.id);
-    a.setAttribute('target', '_blank');
-    a.setAttribute('rel', 'noopener noreferrer');
-    a.textContent = post.title;
-
-    const button = document.createElement('button');
-    button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
-    button.setAttribute('type', 'button');
-    button.setAttribute('data-id', post.id);
-    button.setAttribute('data-bs-toggle', 'modal');
-    button.setAttribute('data-bs-target', '#modal');
-    button.textContent = i18n.t('button_view');
+    const li = createElement('li', {
+      classes: [
+        'list-group-item',
+        'd-flex',
+        'justify-content-between',
+        'align-items-start',
+        'border-0',
+        'border-end-0',
+      ],
+    });
+    const a = createElement('a', {
+      classes: ui.seenPosts.has(post.id) ? ['fw-normal', 'link-secondary'] : ['fw-bold'],
+      attrs: [
+        { key: 'href', value: post.link },
+        { key: 'data-id', value: post.id },
+        { key: 'target', value: '_blank' },
+        { key: 'rel', value: 'noopener noreferrer' },
+      ],
+      text: post.title,
+    });
+    const button = createElement('button', {
+      classes: ['btn', 'btn-outline-primary', 'btn-sm'],
+      attrs: [
+        { key: 'type', value: 'button' },
+        { key: 'data-id', value: post.id },
+        { key: 'data-bs-toggle', value: 'modal' },
+        { key: 'data-bs-target', value: '#modal' },
+      ],
+      text: i18n.t('button_view'),
+    });
 
     li.append(a, button);
     return li;
@@ -104,8 +124,7 @@ const handlePosts = (elements, state, i18n) => {
 
   list.append(...items);
   card.append(cardBody, list);
-  postsBox.innerHTML = '';
-  postsBox.append(card);
+  postsBox.replaceChildren(card);
 };
 
 const handleModal = (state) => {
