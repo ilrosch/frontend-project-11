@@ -82,7 +82,7 @@ const handlePosts = (elements, state, i18n) => {
     li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
 
     const a = document.createElement('a');
-    const classes = ui.seenPosts.has(post.id) ? ['fw-bold', 'link-secondary'] : ['fw-bold'];
+    const classes = ui.seenPosts.has(post.id) ? ['fw-normal', 'link-secondary'] : ['fw-bold'];
     a.classList.add(...classes);
     a.setAttribute('href', post.link);
     a.setAttribute('data-id', post.id);
