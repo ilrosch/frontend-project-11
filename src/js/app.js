@@ -104,6 +104,7 @@ export default () => {
   })
     .then(() => {
       document.querySelectorAll('[data-i18n]').forEach((element) => {
+        // eslint-disable-next-line no-param-reassign
         element.textContent = i18nInstance.t(element.dataset.i18n);
       });
       elements.input.setAttribute('placeholder', i18nInstance.t('form.label'));
